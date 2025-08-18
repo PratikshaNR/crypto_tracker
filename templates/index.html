@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BTC Trend Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='styles.css') }}">
+</head>
+<body>
+
+    <!-- User info and logout -->
+    <div class="user-info">
+        Welcome, <strong>{{ session['user'] }}</strong> |
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+
+
+    <div class="container">
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class="flashes">
+              {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        <h1>Bitcoin Price Trend</h1>
+
+        <form action="/" method="post" class="currency-form">
+            <label for="currency">Select Currency:</label>
+            <select name="currency" id="currency">
+                <option value="usd" {% if currency == 'usd' %}selected{% endif %}>USD</option>
+                <option value="inr" {% if currency == 'inr' %}selected{% endif %}>INR</option>
+                <option value="eur" {% if currency == 'eur' %}selected{% endif %}>EUR</option>
+                <option value="jpy" {% if currency == 'jpy' %}selected{% endif %}>JPY</option>
+            </select>
+            <button type="submit">Generate Chart</button>
+        </form>
+
+        {% if show_chart %}
+        <div class="chart-section">
+            <h2>BTC Trend for {{ currency.upper() }}</h2>
+            <img src="{{ url_for('static', filename='btc_trend.png') }}" alt="BTC Trend Chart">
+        </div>
+        {% endif %}
+
+        {% if data %}
+        <h2>Recent BTC Price Data</h2>
+        <table>
+            <thead>
+                <tr><th>Time</th><th>Price</th><th>Currency</th></tr>
+            </thead>
+            <tbody>
+            {% for row in data %}
+                <tr>
+                    <td>{{ row.timestamp }}</td>
+                    <td>{{ row.value }}</td>
+                    <td>{{ row.currency.upper() }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+</body>
+</html>
