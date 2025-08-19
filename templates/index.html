@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BTC Trend Analyzer</title>
-    <link rel="stylesheet" href="{{ url_for('static',filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
-<body>
+<body class="app-bg">
 
     <!-- User info and logout -->
     <div class="user-info">
@@ -12,22 +15,20 @@
         <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
     </div>
 
-
-    <div class="container">
+    <div class="app-container">
 
         <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
-            <ul class="flashes">
-              {% for category, message in messages %}
-                <li class="{{ category }}">{{ message }}</li>
-              {% endfor %}
-            </ul>
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
           {% endif %}
         {% endwith %}
 
         <h1>Bitcoin Price Trend</h1>
 
+        <!-- Currency + Timeframe Form -->
         <form action="/" method="post" class="currency-form">
             <label for="currency">Select Currency:</label>
             <select name="currency" id="currency">
@@ -36,21 +37,39 @@
                 <option value="eur" {% if currency == 'eur' %}selected{% endif %}>EUR</option>
                 <option value="jpy" {% if currency == 'jpy' %}selected{% endif %}>JPY</option>
             </select>
-            <button type="submit">Generate Chart</button>
+
+            <label for="timeframe">Select Timeframe:</label>
+            <select name="timeframe" id="timeframe">
+                <option value="day" {% if timeframe == 'day' %}selected{% endif %}>Day</option>
+                <option value="week" {% if timeframe == 'week' %}selected{% endif %}>Week</option>
+                <option value="month" {% if timeframe == 'month' %}selected{% endif %}>Month</option>
+            </select>
+
+            <button type="submit">Show Results</button>
         </form>
 
-        {% if show_chart %}
+        {% if alert %}
+        <div class="alert-box">⚠️ {{ alert }}</div>
+        {% endif %}
+
+        {% if show_chart and chart_html %}
         <div class="chart-section">
-            <h2>BTC Trend for {{ currency.upper() }}</h2>
-            <img src="{{ url_for('static', filename='btc_trend.png') }}" alt="BTC Trend Chart">
+            <h2>BTC Trend ({{ currency.upper() }} - {{ timeframe.capitalize() }})</h2>
+            {{ chart_html|safe }}
         </div>
+        {% else %}
+        <p>No trend data available for this currency/timeframe.</p>
         {% endif %}
 
         {% if data %}
         <h2>Recent BTC Price Data</h2>
         <table>
             <thead>
-                <tr><th>Time</th><th>Price</th><th>Currency</th></tr>
+                <tr>
+                    <th>Time</th>
+                    <th>Price</th>
+                    <th>Currency</th>
+                </tr>
             </thead>
             <tbody>
             {% for row in data %}
@@ -63,6 +82,7 @@
             </tbody>
         </table>
         {% endif %}
+
     </div>
 </body>
 </html>
