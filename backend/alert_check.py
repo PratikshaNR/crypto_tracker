@@ -81,7 +81,7 @@ def send_email_alert_to_users(currency, price, chart_html, png_path=None):
         server.quit()
 
 
-def run(currency="usd", timeframe="day"):
+def run(currency="btc", timeframe="day"):
     """Check BTC price against threshold and send alert if exceeded."""
     currency = currency.upper()
     conn = sqlite3.connect(DB_PATH)

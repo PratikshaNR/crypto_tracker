@@ -9,7 +9,6 @@
 </head>
 <body class="app-bg">
 
-    <!-- User info and logout -->
     <div class="user-info">
         Welcome, <strong>{{ session['user'] }}</strong> |
         <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
@@ -17,7 +16,6 @@
 
     <div class="app-container">
 
-        <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, message in messages %}
@@ -28,7 +26,6 @@
 
         <h1>Bitcoin Price Trend</h1>
 
-        <!-- Currency + Timeframe Form -->
         <form action="/" method="post" class="currency-form">
             <label for="currency">Select Currency:</label>
             <select name="currency" id="currency">

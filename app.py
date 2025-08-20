@@ -6,7 +6,7 @@ import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__, static_folder="static")
-app.secret_key = "MySecretKey123!"  # Keep this secret in production!
+app.secret_key = "MySecretKey123!"
 
 # =============================
 # Initialize DB
@@ -14,8 +14,6 @@ app.secret_key = "MySecretKey123!"  # Keep this secret in production!
 def init_db():
     conn = sqlite3.connect("Data/database.db")
     cursor = conn.cursor()
-
-    # Create users table if not exists
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,14 +21,11 @@ def init_db():
             password TEXT NOT NULL
         );
     ''')
-
-    # Add email column if not exists
     cursor.execute("PRAGMA table_info(users)")
     columns = [col[1] for col in cursor.fetchall()]
     if "email" not in columns:
         cursor.execute("ALTER TABLE users ADD COLUMN email TEXT UNIQUE")
         print("Added 'email' column to users table.")
-
     conn.commit()
     conn.close()
 
@@ -58,18 +53,14 @@ def get_latest_data(currency):
 def signup():
     if 'user' in session:
         return redirect(url_for('index'))
-
     if request.method == 'POST':
         username = request.form['username'].strip()
         email = request.form['email'].strip()
         password = request.form['password'].strip()
-
         if not username or not password or not email:
             flash("Username, email, and password are required.", "error")
             return render_template('signup.html')
-
         hashed_password = generate_password_hash(password)
-
         try:
             conn = sqlite3.connect("Data/database.db")
             cursor = conn.cursor()
@@ -88,38 +79,30 @@ def signup():
                 flash("Email already registered. Use another.", "error")
             else:
                 flash("An error occurred. Please try again.", "error")
-
     return render_template('signup.html')
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if 'user' in session:
         return redirect(url_for('index'))
-
     if request.method == 'POST':
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "").strip()
-
         if not username or not password:
             flash("Username and password are required.", "error")
             return render_template('login.html')
-
         conn = sqlite3.connect("Data/database.db")
         cursor = conn.cursor()
         cursor.execute("SELECT password FROM users WHERE username = ?", (username,))
         result = cursor.fetchone()
         conn.close()
-
         if result and check_password_hash(result[0], password):
             session['user'] = username
             flash(f"Welcome, {username}!", "success")
             return redirect(url_for('index'))
         else:
             flash("Invalid username or password", "error")
-
     return render_template("login.html")
-
 
 @app.route('/logout')
 def logout():
@@ -134,20 +117,14 @@ def logout():
 def index():
     if 'user' not in session:
         return redirect(url_for('login'))
-
     currency = request.form.get("currency", request.args.get("currency", "usd")).lower()
     timeframe = request.form.get("timeframe", request.args.get("timeframe", "day")).lower()
-
-    # Fetch latest data
+    print(f"[DEBUG] index() received currency='{currency}', timeframe='{timeframe}'")
+    currency_upper = currency.upper()
     fetch_run([currency])
-
-    # Check BTC alert
     alert_msg = alert_run(currency, timeframe)
-
-    # Generate chart
-    chart_html, html_path, png_path = trend_run(currency, timeframe)
+    chart_html, html_path, png_path = trend_run(currency_upper, timeframe)
     data = get_latest_data(currency)
-
     return render_template(
         "index.html",
         currency=currency,
@@ -157,7 +134,6 @@ def index():
         data=data,
         alert=alert_msg
     )
-
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)
