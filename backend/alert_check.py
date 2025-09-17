@@ -103,3 +103,9 @@ def run(currency="btc", timeframe="day"):
         return f"Alert sent! BTC {currency} is {current_price}"
 
     return f"No alert. BTC {currency} is {current_price}"
+
+if __name__ == "__main__":
+    print("Running alert check...")
+    result = run()  # default BTC and timeframe
+    print(result)
+
